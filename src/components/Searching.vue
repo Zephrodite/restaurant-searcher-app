@@ -1,4 +1,5 @@
 <template>
+     <!-- <img src="https://images.unsplash.com/photo-1531685250784-7569952593d2?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80" alt=""> -->
     <h1>Let's find your favourite restaurants</h1>
     <br />
     <form action="http://localhost:8081/restaurantslist">
@@ -18,8 +19,7 @@
                 </div>
             </div>
         </div>
-    </form>
-
+    </form> 
     <br /><br />
 </template>
 
@@ -39,15 +39,20 @@ export default {
     props: {
         msg: String,
     },
+    beforeCreate: function() {
+        document.body.className = 'searching';
+    }
 
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
 h1 {
-    margin-top: 180px;
+    margin-top: 220px;
     font-size: 28px;
     font-weight: bold;
+    color: white;
 }
 </style>
