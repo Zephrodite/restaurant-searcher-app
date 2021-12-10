@@ -50,6 +50,7 @@
     </nav>
 
 
+
     <div class="container mt-5">
         <router-view></router-view>
     </div>
@@ -90,7 +91,7 @@ export default defineComponent({
             this.search_value = "";
             e.preventDefault();
 
-            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${this.lat},${this.lng}&type=restaurant&radius=15000&key=AIzaSyASfgz6VeOwEg11zaGmqoaTLSuFbGkFWvg`;
+            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${this.lat},${this.lng}&type=restaurant&radius=15000&key=[API KEYS]`;
 
             axios
                 .get(URL)
