@@ -90,7 +90,7 @@ export default defineComponent({
             this.search_value = "";
             e.preventDefault();
 
-            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${this.lat},${this.lng}&type=restaurant&radius=15000&key=[API KEYS]`;
+            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${this.lat},${this.lng}&type=restaurant&radius=15000&key=AIzaSyASfgz6VeOwEg11zaGmqoaTLSuFbGkFWvg`;
 
             axios
                 .get(URL)
