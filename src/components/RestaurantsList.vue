@@ -1,5 +1,4 @@
 <template>
-    
     <table class="table" id="list-of-restaurants">
         <thead class="thead-dark">
             <tr>
@@ -27,23 +26,34 @@
         </tbody>
     </table>
 
+    <h1>{{ search_value }}</h1>
 </template>
 
 <script>
-export default {
-  name: 'RestaurantsList',
-  props: {
-    msg: String
-  }
-}
+import { defineComponent } from "vue";
+
+
+
+export default defineComponent({
+    name: "RestaurantsList",
+    props: {
+        msg: String,
+    },
+    data() {
+        return {
+            search_value: "",
+        };
+    },
+    beforeCreate: function () {
+        document.body.className = "restaurantlist";
+    },
+});
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
 #list-of-restaurants {
     margin-left: auto;
     margin-right: auto;
 }
-
 </style>

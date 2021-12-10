@@ -1,4 +1,4 @@
-# restaurants-searching-application
+# res-app-last
 
 ## Project setup
 ```
