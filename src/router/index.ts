@@ -1,19 +1,21 @@
-import { createWebHistory, createRouter } from "vue-router";
-import RestaurantsList from "@/components/RestaurantsList.vue";
-import Searching from "@/components/Searching.vue";
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
-    path: "/" as string,
-    name: "home" as string,
-    component: Searching,
+    path: "/",
+    alias: "/searchresults/new",
+    name: "searchresults-new",
+    component: () => import("@/components/Searching.vue"),
   },
   {
-    path: "/restaurantslist" as string,
-    name: "restaurantslist" as string,
-    component: RestaurantsList,
+    path: "/",
+    alias: "/restaurantslist/:id",
+    name: "restaurantslist",
+    component: () => import("@/components/RestaurantsList.vue"),
   },
 ];
+
+console.log(process.env.BASE_URL);
 
 const router = createRouter({
   history: createWebHistory(),

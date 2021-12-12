@@ -3,28 +3,30 @@
     <br />
 
     <div>
-        <section>
-            <form @submit="searchRestaurantsSubmit" action="/restaurantlist">
-                <div
-                    class="row height d-flex justify-content-center align-items-center"
-                >
-                    <div class="col-md-8">
-                        <div class="search">
-                            <fa id="fa-search" icon="search" />
-                            <input
-                                type="text"
-                                class="form-control"
-                                placeholder=" Please Enter A City/Town Name"
-                                v-model="search_value"
-                                ref="autocomplete"
-                            />
-
-                        </div>
+        <form @submit="searchRestaurantsSubmit">
+            <div
+                class="row height d-flex justify-content-center align-items-center"
+            >
+                <div class="col-md-8">
+                    <div class="search">
+                        <fa id="fa-search" icon="search" />
+                        <input
+                            type="text"
+                            class="form-control"
+                            placeholder=" Please Enter A City/Town Name"
+                            v-model="search_address"
+                            ref="autocomplete"
+                        />
                     </div>
                 </div>
-            </form>
-        </section>
+            </div>
+        </form>
     </div>
+        <!-- <div ref="idRef" >{{search_results_current._id}}</div> -->
+
+    <!-- <div v-for="(place, index) in places" :key="index">
+        <div>{{ index + 1 }}. {{ place.name }} + {{ place.vicinity }}</div>
+    </div> -->
     <!-- <h1>lat:{{ lat }} and lng:{{ lng }}</h1>
     <table class="table table-dark">
         <thead>
@@ -44,37 +46,100 @@
     </table> -->
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
 import axios from "axios";
+import { SearchResult } from "@/interfaces/SearchResults";
+import { createSearchResult } from "@/services/SearchResultsServices";
+import { getSearchResults } from "@/services/SearchResultsServices";
 
 export default defineComponent({
     name: "Searching",
     data() {
         return {
-            search_value: "",
-            error: "",
-            spinner: false,
+            search_results: {} as SearchResult,
+            search_results_all: [] as SearchResult[],
+            search_results_current: {} as SearchResult,
+            search_results_found:{} as SearchResult,
+            id: "",
+            places: [],
             lat: 0,
             lng: 0,
-            places: [],
+            search_address: "",
         };
     },
     methods: {
-        // getLatAndLng(latt, lngg) {
-        //     this.lat = latt;
-        //     this.lng = lngg
-        // },
-        searchRestaurantsSubmit(e) {
+
+        searchRestaurantsSubmit(e: any) {
             e.preventDefault();
-            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${
-                this.lat
-            },${this.lng}&type=restaurant&radius=15000&key=[ API KEYS ]`;
+            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
+            ${this.lat},${this.lng}&type=restaurant&radius=15000&key=[API key]`;
 
             axios
                 .get(URL)
                 .then((response) => {
                     this.places = response.data.results;
+                })
+                .catch((error) => {
+                    console.log(error.message);
+                });
+        },
+        async getCurrentTasksAndRoute() {
+            const res = await getSearchResults();
+            this.search_results_all = res.data;
+            this.search_results_current =
+                this.search_results_all[this.search_results_all.length - 1];
+            this.$router.push(
+                `/restaurantslist/${this.search_results_current._id}`
+            );
+        },
+        async getAllTasks(
+            place_name: string,
+            lat_value: number,
+            lng_value: number
+        ) {
+            const res = await getSearchResults();
+            this.search_results_all = res.data;
+
+            let search_results_exist = false;
+
+            for (let i = 0; i < this.search_results_all.length; i++) {
+                if (
+                    this.search_results_all[i].search_value.toString() ==
+                    place_name.toString()
+                ) {
+                    console.log("FIND DATA!!");
+                    this.search_results_found = this.search_results_all[i];
+                    search_results_exist = true;
+                    break;
+                }
+            }
+
+            if (search_results_exist == true) {
+                this.$router.push(
+                    `/restaurantslist/${this.search_results_found._id}`
+                );
+            } else if (search_results_exist == false) {
+                this.searchRestaurants(lat_value, lng_value, place_name);
+            }
+        },
+        searchRestaurants(latt: number, lngg: number, place_name: string) {
+            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
+            ${latt},${lngg}&type=restaurant&radius=15000&key=[API key]`;
+
+            axios
+                .get(URL)
+                .then((response) => {
+                    this.places = response.data.results;
+                    // console.log(response.data.results);
+                    this.search_results.places = this.places;
+                    this.search_results.search_value = place_name;
+                    console.log("SAVING DATA");
+                    const res = createSearchResult(this.search_results);
+                    this.getCurrentTasksAndRoute();
+
+                    // const resForGet = getSearchResults();
+                    // this.search_results_all = resForGet.data;
                 })
                 .catch((error) => {
                     console.log(error.message);
@@ -96,7 +161,14 @@ export default defineComponent({
             var place = autocomplete.getPlace();
             this.lat = place.geometry.location.lat();
             this.lng = place.geometry.location.lng();
-            this.$router.push("/restaurantslist");
+            this.getAllTasks(
+                place.name,
+                place.geometry.location.lat(),
+                place.geometry.location.lng()
+            );
+
+            // this.$router.push(`/restaurantslist`);
+            // this.$router.push("/restaurantslist");
             // getLatAndLng(place.geometry.location.lat(), place.geometry.location.lng());
 
             // findCloseBuyButtonPressed(
@@ -109,11 +181,6 @@ export default defineComponent({
             //   place.geometry.location.lng()
             // );
         });
-    },
-    computed: {
-        coordinates() {
-            return `${this.lat}, ${this.lng}`;
-        },
     },
     beforeCreate: function () {
         document.body.className = "searching";

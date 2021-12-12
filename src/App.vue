@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <router-link to="/" class="navbar-brand mr-3"
+            <router-link to="/" class="navbar-brand"
                 >Restaurants Searcher</router-link
             >
             <button
@@ -27,43 +27,47 @@
                         <router-link to="/" class="nav-link">About</router-link>
                     </li>
                 </ul>
-                <form
-                    id="searching-form"
-                    class="d-flex"
-                    action="/restaurantslist"
-                    @submit="searchRestaurantsSubmit"
-                >
-                    <div class="search">
-                        <fa id="search-icon" icon="search" />
-                        <input
-                            id="navbar-search-input"
-                            type="text"
-                            class="form-control"
-                            placeholder="City/Town Name"
-                            v-model="search_value"
-                            ref="autocomplete"
-                        />
-                    </div>
-                </form>
             </div>
+
+            <form
+                id="searching-form"
+                class=""
+                @submit="searchRestaurantsSubmit"
+            >
+                <div class="search">
+                    <fa id="search-icon" icon="search" />
+                    <input
+                        id="navbar-search-input"
+                        type="text"
+                        class="form-control"
+                        placeholder="City/Town Name"
+                        v-model="search_address"
+                        ref="autocomplete"
+                    />
+                </div>
+            </form>
         </div>
     </nav>
-
-
 
     <div class="container mt-5">
         <router-view></router-view>
     </div>
+    <!-- <div> {{places}}</div> -->
+    <!-- <div v-for="(place, index) in places" :key="index">
+        <div>{{ index + 1 }}. {{ place.name }} + {{ place.vicinity }}</div>
+    </div> -->
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import axios from "axios";
-// import RestaurantsList from "./components/RestaurantsList.vue";
+import { SearchResult } from "@/interfaces/SearchResults";
+import { createSearchResult } from "@/services/SearchResultsServices";
+import { getSearchResults } from "@/services/SearchResultsServices";
 
 declare global {
     interface Window {
-        google:any;
+        google: any;
     }
 }
 
@@ -74,24 +78,23 @@ export default defineComponent({
     },
     data() {
         return {
-            search_value: "",
-            error: "",
-            spinner: false,
+            search_results: {} as SearchResult,
+            search_results_all: [] as SearchResult[],
+            search_results_current: {} as SearchResult,
+            search_results_found: {} as SearchResult,
+            id: "",
+            places: [],
             lat: 0,
             lng: 0,
-            places: [],
+            search_address: "",
         };
     },
     methods: {
-        // getLatAndLng(latt, lngg) {
-        //     this.lat = latt;
-        //     this.lng = lngg
-        // },
-        searchRestaurantsSubmit(e: Event) {
-            this.search_value = "";
+        searchRestaurantsSubmit(e: any) {
+            this.search_address = "";
             e.preventDefault();
-
-            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${this.lat},${this.lng}&type=restaurant&radius=15000&key=[API KEYS]`;
+            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
+            ${this.lat},${this.lng}&type=restaurant&radius=15000&key=[API key]`;
 
             axios
                 .get(URL)
@@ -102,10 +105,69 @@ export default defineComponent({
                     console.log(error.message);
                 });
         },
+        async getCurrentTasksAndRoute() {
+            const res = await getSearchResults();
+            this.search_results_all = res.data;
+            this.search_results_current =
+                this.search_results_all[this.search_results_all.length - 1];
+            this.$router.push(
+                `/restaurantslist/${this.search_results_current._id}`
+            );
+        },
+        async getAllTasks(
+            place_name: string,
+            lat_value: number,
+            lng_value: number
+        ) {
+            const res = await getSearchResults();
+            this.search_results_all = res.data;
+            let search_results_exist = false;
+
+            for (let i = 0; i < this.search_results_all.length; i++) {
+                if (
+                    this.search_results_all[i].search_value.toString() ==
+                    place_name.toString()
+                ) {
+                    console.log("FIND DATA!!");
+                    this.search_results_found = this.search_results_all[i];
+                    search_results_exist = true;
+                    break;
+                }
+            }
+
+            if (search_results_exist == true) {
+                this.$router.push(
+                    `/restaurantslist/${this.search_results_found._id}`
+                );
+            } else if (search_results_exist == false) {
+                this.searchRestaurants(lat_value, lng_value, place_name);
+            }
+        },
+        searchRestaurants(latt: number, lngg: number, place_name: string) {
+            const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
+            ${latt},${lngg}&type=restaurant&radius=15000&key=[API key]`;
+
+            axios
+                .get(URL)
+                .then((response) => {
+                    this.places = response.data.results;
+                    // console.log(response.data.results);
+                    this.search_results.places = this.places;
+                    this.search_results.search_value = place_name;
+                    console.log("SAVING DATA");
+                    const res = createSearchResult(this.search_results);
+                    this.getCurrentTasksAndRoute();
+
+                    // const resForGet = getSearchResults();
+                    // this.search_results_all = resForGet.data;
+                })
+                .catch((error) => {
+                    console.log(error.message);
+                });
+        },
     },
     mounted() {
-        
-        const google = (window as Window).google;
+        const google = window.google;
         var autocomplete = new google.maps.places.Autocomplete(
             this.$refs["autocomplete"],
             {
@@ -116,13 +178,18 @@ export default defineComponent({
         );
 
         autocomplete.addListener("place_changed", () => {
-            this.search_value = "";
             var place = autocomplete.getPlace();
             this.lat = place.geometry.location.lat();
             this.lng = place.geometry.location.lng();
-            this.$router.push("/restaurantslist");
+            this.getAllTasks(
+                place.name,
+                place.geometry.location.lat(),
+                place.geometry.location.lng()
+            );
+            this.search_address = "";
 
-            // console.log(this.$router.currentRoute.value);
+            // this.$router.push(`/restaurantslist`);
+            // this.$router.push("/restaurantslist");
             // getLatAndLng(place.geometry.location.lat(), place.geometry.location.lng());
 
             // findCloseBuyButtonPressed(
@@ -135,11 +202,6 @@ export default defineComponent({
             //   place.geometry.location.lng()
             // );
         });
-    },
-    computed: {
-        // currentRouteName() {
-        //     return this.$route.name;
-        // },
     },
 });
 </script>
@@ -160,10 +222,6 @@ body.searching {
     background-image: url("https://images.unsplash.com/photo-1463797221720-6b07e6426c24?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1171&q=80");
 }
 
-/* .navbar .container-fluid {
-    margin-left: 180px;
-} */
-
 .search {
     position: relative;
     /* box-shadow: 0 0 40px black; */
@@ -176,7 +234,8 @@ body.searching {
 }
 
 #searching-form {
-    margin-left: 700px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .search #navbar-search-input {
