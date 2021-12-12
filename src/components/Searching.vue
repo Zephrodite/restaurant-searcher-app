@@ -1,5 +1,5 @@
 <template>
-    <h1>Find your favourite restaurants</h1>
+    <h1>Find your favourite restaurant</h1>
     <br />
 
     <div>
@@ -22,28 +22,8 @@
             </div>
         </form>
     </div>
-        <!-- <div ref="idRef" >{{search_results_current._id}}</div> -->
 
-    <!-- <div v-for="(place, index) in places" :key="index">
-        <div>{{ index + 1 }}. {{ place.name }} + {{ place.vicinity }}</div>
-    </div> -->
-    <!-- <h1>lat:{{ lat }} and lng:{{ lng }}</h1>
-    <table class="table table-dark">
-        <thead>
-            <tr>
-                <th scope="col">No.</th>
-                <th scope="col">Restaurant's name</th>
-                <th scope="col">Location</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="(place, index) in places" :key="index">
-                <th>{{ index + 1 }}</th>
-                <td>{{ place.name }}</td>
-                <td>{{ place.vicinity }}</td>
-            </tr>
-        </tbody>
-    </table> -->
+    <div></div>
 </template>
 
 <script lang="ts">
@@ -60,7 +40,7 @@ export default defineComponent({
             search_results: {} as SearchResult,
             search_results_all: [] as SearchResult[],
             search_results_current: {} as SearchResult,
-            search_results_found:{} as SearchResult,
+            search_results_found: {} as SearchResult,
             id: "",
             places: [],
             lat: 0,
@@ -69,11 +49,10 @@ export default defineComponent({
         };
     },
     methods: {
-
         searchRestaurantsSubmit(e: any) {
             e.preventDefault();
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
-            ${this.lat},${this.lng}&type=restaurant&radius=15000&key=[API key]`;
+            ${this.lat},${this.lng}&type=restaurant&radius=20000&key=[API KEY]`;
 
             axios
                 .get(URL)
@@ -93,7 +72,7 @@ export default defineComponent({
                 `/restaurantslist/${this.search_results_current._id}`
             );
         },
-        async getAllTasks(
+        async searchResultsExistCheck(
             place_name: string,
             lat_value: number,
             lng_value: number
@@ -125,21 +104,17 @@ export default defineComponent({
         },
         searchRestaurants(latt: number, lngg: number, place_name: string) {
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
-            ${latt},${lngg}&type=restaurant&radius=15000&key=[API key]`;
+            ${latt},${lngg}&type=restaurant&radius=20000&key=[API KEY]`;
 
             axios
                 .get(URL)
                 .then((response) => {
                     this.places = response.data.results;
-                    // console.log(response.data.results);
                     this.search_results.places = this.places;
                     this.search_results.search_value = place_name;
                     console.log("SAVING DATA");
                     const res = createSearchResult(this.search_results);
                     this.getCurrentTasksAndRoute();
-
-                    // const resForGet = getSearchResults();
-                    // this.search_results_all = resForGet.data;
                 })
                 .catch((error) => {
                     console.log(error.message);
@@ -161,25 +136,11 @@ export default defineComponent({
             var place = autocomplete.getPlace();
             this.lat = place.geometry.location.lat();
             this.lng = place.geometry.location.lng();
-            this.getAllTasks(
+            this.searchResultsExistCheck(
                 place.name,
                 place.geometry.location.lat(),
                 place.geometry.location.lng()
             );
-
-            // this.$router.push(`/restaurantslist`);
-            // this.$router.push("/restaurantslist");
-            // getLatAndLng(place.geometry.location.lat(), place.geometry.location.lng());
-
-            // findCloseBuyButtonPressed(
-            //     place.geometry.location.lat(),
-            //     place.geometry.location.lng()
-            // );
-
-            // this.showLocationOnTheMap(
-            //   place.geometry.location.lat(),
-            //   place.geometry.location.lng()
-            // );
         });
     },
     beforeCreate: function () {
@@ -191,8 +152,9 @@ export default defineComponent({
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h1 {
-    margin-top: 250px;
-    font-size: 29px;
+        font-family: "Itim", sans-serif;
+    margin-top: 240px;
+    font-size: 36px;
     font-weight: bold;
     color: white;
     /* text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; */

@@ -31,10 +31,10 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { SearchResult } from "@/interfaces/SearchResults";
-import { getSearchResult } from "@/services/SearchResultsServices";
+import { getSearchResultSwitch } from "@/services/SearchResultsServices";
 
 export default defineComponent({
-    name: "RestaurantsList",
+    name: "RestaurantsListSwitch",
     props: {
         msg: String,
     },
@@ -46,8 +46,9 @@ export default defineComponent({
     methods: {
         async loadTask(id: string) {
             try {
-                const { data } = await getSearchResult(id);
+                const { data } = await getSearchResultSwitch(id);
                 this.search_results_current = data;
+
             } catch (error) {
                 console.error(error);
             }
@@ -60,10 +61,9 @@ export default defineComponent({
         if (typeof this.$route.params.id === "string") {
             this.loadTask(this.$route.params.id);
         }
-
     },
     beforeCreate: function () {
-        document.body.className = "restaurantlist";
+        document.body.className = "restaurantlistswitch";
     },
 });
 </script>

@@ -8,5 +8,8 @@ export const getSearchResults = async (): Promise<AxiosResponse<SearchResult[]>>
 export const getSearchResult = async (id: string): Promise<AxiosResponse<SearchResult>> =>
   await axios.get(`/searchresults/${id}`);
 
+  export const getSearchResultSwitch = async (id: string): Promise<AxiosResponse<SearchResult>> =>
+  await axios.get(`/searchresults/sw/${id}`);
+
 export const createSearchResult = async (searchresult: SearchResult): Promise<AxiosResponse> =>
   await axios.post("/searchresults", searchresult);
