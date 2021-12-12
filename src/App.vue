@@ -52,10 +52,6 @@
     <div class="container mt-5">
         <router-view></router-view>
     </div>
-    <!-- <div> {{places}}</div> -->
-    <!-- <div v-for="(place, index) in places" :key="index">
-        <div>{{ index + 1 }}. {{ place.name }} + {{ place.vicinity }}</div>
-    </div> -->
 </template>
 
 <script lang="ts">
@@ -94,7 +90,7 @@ export default defineComponent({
             this.search_address = "";
             e.preventDefault();
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
-            ${this.lat},${this.lng}&type=restaurant&radius=15000&key=[API key]`;
+            ${this.lat},${this.lng}&type=restaurant&radius=20000&key=AIzaSyASfgz6VeOwEg11zaGmqoaTLSuFbGkFWvg`;
 
             axios
                 .get(URL)
@@ -110,11 +106,34 @@ export default defineComponent({
             this.search_results_all = res.data;
             this.search_results_current =
                 this.search_results_all[this.search_results_all.length - 1];
-            this.$router.push(
-                `/restaurantslist/${this.search_results_current._id}`
-            );
+            if (
+                window.location.href
+                    .toString()
+                    .substring(
+                        0,
+                        window.location.href.toString().length - 24
+                    ) ===
+                `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
+            ) {
+                this.$router.push(
+                    `/restaurantslist/${this.search_results_current._id}`
+                );
+            }
+            if (
+                window.location.href
+                    .toString()
+                    .substring(
+                        0,
+                        window.location.href.toString().length - 24
+                    ) !==
+                `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
+            ) {
+                this.$router.push(
+                    `/restaurantslist/sw/${this.search_results_current._id}`
+                );
+            }
         },
-        async getAllTasks(
+        async searchResultsExistCheck(
             place_name: string,
             lat_value: number,
             lng_value: number
@@ -122,10 +141,9 @@ export default defineComponent({
             const res = await getSearchResults();
             this.search_results_all = res.data;
             let search_results_exist = false;
-
             for (let i = 0; i < this.search_results_all.length; i++) {
                 if (
-                    this.search_results_all[i].search_value.toString() ==
+                    this.search_results_all[i].search_value.toString() ===
                     place_name.toString()
                 ) {
                     console.log("FIND DATA!!");
@@ -135,31 +153,51 @@ export default defineComponent({
                 }
             }
 
-            if (search_results_exist == true) {
-                this.$router.push(
-                    `/restaurantslist/${this.search_results_found._id}`
-                );
-            } else if (search_results_exist == false) {
+            if (search_results_exist === true) {
+                if (
+                    window.location.href
+                        .toString()
+                        .substring(
+                            0,
+                            window.location.href.toString().length - 24
+                        ) ===
+                    `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
+                ) {
+                    this.$router.push(
+                        `/restaurantslist/${this.search_results_found._id}`
+                    );
+                }
+                if (
+                    window.location.href
+                        .toString()
+                        .substring(
+                            0,
+                            window.location.href.toString().length - 24
+                        ) !==
+                    `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
+                ) {
+                    this.$router.push(
+                        `/restaurantslist/sw/${this.search_results_found._id}`
+                    );
+                }
+            }
+            if (search_results_exist === false) {
                 this.searchRestaurants(lat_value, lng_value, place_name);
             }
         },
         searchRestaurants(latt: number, lngg: number, place_name: string) {
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
-            ${latt},${lngg}&type=restaurant&radius=15000&key=[API key]`;
+            ${latt},${lngg}&type=restaurant&radius=20000&key=AIzaSyASfgz6VeOwEg11zaGmqoaTLSuFbGkFWvg`;
 
             axios
                 .get(URL)
                 .then((response) => {
                     this.places = response.data.results;
-                    // console.log(response.data.results);
                     this.search_results.places = this.places;
                     this.search_results.search_value = place_name;
                     console.log("SAVING DATA");
                     const res = createSearchResult(this.search_results);
                     this.getCurrentTasksAndRoute();
-
-                    // const resForGet = getSearchResults();
-                    // this.search_results_all = resForGet.data;
                 })
                 .catch((error) => {
                     console.log(error.message);
@@ -181,26 +219,12 @@ export default defineComponent({
             var place = autocomplete.getPlace();
             this.lat = place.geometry.location.lat();
             this.lng = place.geometry.location.lng();
-            this.getAllTasks(
+            this.searchResultsExistCheck(
                 place.name,
                 place.geometry.location.lat(),
                 place.geometry.location.lng()
             );
             this.search_address = "";
-
-            // this.$router.push(`/restaurantslist`);
-            // this.$router.push("/restaurantslist");
-            // getLatAndLng(place.geometry.location.lat(), place.geometry.location.lng());
-
-            // findCloseBuyButtonPressed(
-            //     place.geometry.location.lat(),
-            //     place.geometry.location.lng()
-            // );
-
-            // this.showLocationOnTheMap(
-            //   place.geometry.location.lat(),
-            //   place.geometry.location.lng()
-            // );
         });
     },
 });
@@ -208,7 +232,7 @@ export default defineComponent({
 
 <style>
 #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
+    font-family: "Itim", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
@@ -219,18 +243,31 @@ body.searching {
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
-    background-image: url("https://images.unsplash.com/photo-1463797221720-6b07e6426c24?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1171&q=80");
+    background-image: url("./assets/background-res-app-blur.jpg");
+}
+
+body.restaurantlist {
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-image: url("./assets/background-res-app-blur.jpg");
+}
+
+body.restaurantlistswitch {
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-image: url("./assets/background-res-app-blur.jpg");
 }
 
 .search {
     position: relative;
-    /* box-shadow: 0 0 40px black; */
 }
 
 .search input {
     height: 60px;
     text-indent: 25px;
-    border: 2px solid #d6d4d4;
+    border: 3px solid #d6d4d4;
 }
 
 #searching-form {
@@ -247,7 +284,8 @@ body.searching {
 
 .search input:focus {
     box-shadow: none;
-    border: 2px solid #37e2a4;
+    border: 3px solid #37e2a4;
+    box-shadow: 0 0 8px #212529;
 }
 
 .search #navbar-search-input:focus {
@@ -257,7 +295,7 @@ body.searching {
 
 .search #fa-search {
     position: absolute;
-    top: 20px;
+    top: 22px;
     left: 16px;
     color: #212529;
 }

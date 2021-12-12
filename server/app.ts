@@ -4,8 +4,7 @@ var express = require("express");
 var morgan = require("morgan");
 var app = express();
 var cors = require("cors");
-var searchresults =  require("./routes");
-
+var searchresults = require("./routes");
 
 app.use(morgan("dev"));
 app.use(cors());

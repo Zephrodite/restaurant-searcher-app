@@ -13,8 +13,16 @@ const routes: RouteRecordRaw[] = [
     name: "restaurantslist",
     component: () => import("@/components/RestaurantsList.vue"),
   },
+  {
+    path: "/",
+    alias: "/restaurantslist/sw/:id",
+    name: "restaurantslistsw",
+    component: () => import("@/components/RestaurantsListSwitch.vue"),
+  }
 ];
 
+
+"/searchresults/sw/:id"
 console.log(process.env.BASE_URL);
 
 const router = createRouter({

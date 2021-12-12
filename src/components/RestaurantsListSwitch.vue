@@ -31,10 +31,10 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { SearchResult } from "@/interfaces/SearchResults";
-import { getSearchResult } from "@/services/SearchResultsServices";
+import { getSearchResultSwitch } from "@/services/SearchResultsServices";
 
 export default defineComponent({
-    name: "RestaurantsList",
+    name: "RestaurantsListSwitch",
     props: {
         msg: String,
     },
@@ -46,16 +46,16 @@ export default defineComponent({
     methods: {
         async loadTask(id: string) {
             try {
-                const { data } = await getSearchResult(id);
+                const { data } = await getSearchResultSwitch(id);
                 this.search_results_current = data;
 
                 // console.log(this.search_results_current._id);
                 // if (
-                //     window.location.href.toString() ==
+                //     window.location.href.toString() !=
                 //     `http://${window.location.hostname}:${location.port}/restaurantslist/${this.search_results_current._id}`
                 // ) {
                 //     console.log("HREF CHANGED");
-                //     // location.reload();
+                //     location.reload();
                 // }
             } catch (error) {
                 console.error(error);
@@ -76,7 +76,7 @@ export default defineComponent({
         // console.log(`http://${window.location.hostname}:${location.port}/restaurantslist/`);
     },
     beforeCreate: function () {
-        document.body.className = "restaurantlist";
+        document.body.className = "restaurantlistswitch";
     },
 });
 </script>
