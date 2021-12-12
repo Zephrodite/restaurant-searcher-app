@@ -52,7 +52,7 @@ export default defineComponent({
         searchRestaurantsSubmit(e: any) {
             e.preventDefault();
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
-            ${this.lat},${this.lng}&type=restaurant&radius=20000&key=AIzaSyASfgz6VeOwEg11zaGmqoaTLSuFbGkFWvg`;
+            ${this.lat},${this.lng}&type=restaurant&radius=20000&key=[API KEY]`;
 
             axios
                 .get(URL)
@@ -104,7 +104,7 @@ export default defineComponent({
         },
         searchRestaurants(latt: number, lngg: number, place_name: string) {
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
-            ${latt},${lngg}&type=restaurant&radius=20000&key=AIzaSyASfgz6VeOwEg11zaGmqoaTLSuFbGkFWvg`;
+            ${latt},${lngg}&type=restaurant&radius=20000&key=[API KEY]`;
 
             axios
                 .get(URL)

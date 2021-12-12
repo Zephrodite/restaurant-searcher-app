@@ -48,15 +48,6 @@ export default defineComponent({
             try {
                 const { data } = await getSearchResult(id);
                 this.search_results_current = data;
-
-                // console.log(this.search_results_current._id);
-                // if (
-                //     window.location.href.toString() ==
-                //     `http://${window.location.hostname}:${location.port}/restaurantslist/${this.search_results_current._id}`
-                // ) {
-                //     console.log("HREF CHANGED");
-                //     // location.reload();
-                // }
             } catch (error) {
                 console.error(error);
             }
@@ -70,10 +61,6 @@ export default defineComponent({
             this.loadTask(this.$route.params.id);
         }
 
-        // console.log(window.location.href);
-        // console.log(window.location.hostname);
-        // console.log(location.port);
-        // console.log(`http://${window.location.hostname}:${location.port}/restaurantslist/`);
     },
     beforeCreate: function () {
         document.body.className = "restaurantlist";
