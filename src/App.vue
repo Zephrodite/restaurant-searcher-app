@@ -1,7 +1,11 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-custom bg-dark">
         <div class="container">
-            <router-link to="/" class="navbar-brand"
+            <router-link
+                to="/"
+                class="navbar-brand"
+                id="make-active-nav-item"
+                @click="changeActiveNavItem"
                 >Restaurants Searcher</router-link
             >
             <button
@@ -18,13 +22,18 @@
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="nav navbar-nav mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <router-link to="/" class="nav-link px-4"
-                            >Home</router-link
+                    <li class="nav-item mx-3">
+                        <router-link to="/" class="nav-link">About</router-link>
+                    </li>
+                    <li class="nav-item mx-3">
+                        <router-link to="/" class="nav-link"
+                            >Support</router-link
                         >
                     </li>
-                    <li class="nav-item">
-                        <router-link to="/" class="nav-link">About</router-link>
+                    <li class="nav-item mx-3">
+                        <router-link to="/" class="nav-link"
+                            >Contact</router-link
+                        >
                     </li>
                 </ul>
             </div>
@@ -35,13 +44,29 @@
                 @submit="searchRestaurantsSubmit"
             >
                 <div class="search">
+                    <svg
+                        id="tiny_loader"
+                        viewBox="0 0 90 90"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <circle
+                            id="c"
+                            fill="none"
+                            stroke-width="6px"
+                            stroke-linecap="round"
+                            stroke="#37e2a4"
+                            cx="45"
+                            cy="45"
+                            r="20"
+                        />
+                    </svg>
                     <fa id="search-icon" icon="search" />
                     <input
                         id="navbar-search-input"
                         type="text"
                         class="form-control"
                         placeholder="City/Town Name"
-                        v-model="search_address"
+                        v-model="search_value_in_navbar_search_input"
                         ref="autocomplete"
                     />
                 </div>
@@ -69,26 +94,95 @@ declare global {
 
 export default defineComponent({
     name: "App",
-    components: {
-        // RestaurantsList,
-    },
+    components: {},
     data() {
         return {
-            search_results: {} as SearchResult,
+            search_result: {} as SearchResult,
             search_results_all: [] as SearchResult[],
-            search_results_current: {} as SearchResult,
-            search_results_found: {} as SearchResult,
-            id: "",
+            search_result_current: {} as SearchResult,
+            search_result_found: {} as SearchResult,
             places: [],
             lat: 0,
             lng: 0,
-            search_address: "",
+            search_value_in_navbar_search_input: "",
         };
     },
     methods: {
+
+        // - Check the current link for switch to another link when users enter/press some new search value.
+        // I'm having a problem when searching for new values. The link has been changed. But the list of restaurants on the page doesn't change.
+        switchLink(id_of_Current_search_result: string) {
+            if (
+                window.location.href
+                    .toString()
+                    .substring(
+                        0,
+                        window.location.href.toString().length - 24 // - To this line of code --> window.location.href.toString().length - 24 <-- use minus 24 to delete the ObjectID in currentlink.
+                                                                    // There are 24 character in ObjectID e.g. 61b6e299dd64c45ca711d94e
+                    ) ===
+                `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
+            ) {
+                this.$router.push(
+                    `/restaurantslist/${id_of_Current_search_result}`
+                );
+            } else {
+                this.$router.push(
+                    `/restaurantslist/sw/${id_of_Current_search_result}`
+                );
+            }
+        },
+        changeActiveNavItem() {
+            if (
+                window.location.href.toString() !==
+                `http://${window.location.hostname}:${location.port}/`
+            ) {
+                this.search_value_in_navbar_search_input = "";
+
+                (
+                    document.getElementById(
+                        "make-active-nav-item"
+                    ) as HTMLElement
+                ).style.color = "#37e2a4";
+
+                (
+                    document.getElementById(
+                        "make-active-nav-item"
+                    ) as HTMLElement
+                ).style.textShadow =
+                    "0 0 0.125em hsl(0 0% 100% / 0.3), 0 0 0.45em currentColor";
+
+                var setInteractText = {
+                    hover: function (event: any) {
+                        event.target.style.color = "#37e2a4";
+                        event.target.style.textShadow =
+                            "0 0 0.125em hsl(0 0% 100% / 0.3), 0 0 0.45em currentColor";
+                    },
+                    out: function (event: any) {
+                        event.target.style.color = "#37e2a4";
+                        event.target.style.textShadow =
+                            "0 0 0.125em hsl(0 0% 100% / 0.3), 0 0 0.45em currentColor";
+                    },
+                };
+
+                var setInteractTextElement = document.getElementById(
+                    "make-active-nav-item"
+                );
+                (setInteractTextElement as HTMLElement).addEventListener(
+                    "mouseover",
+                    setInteractText.hover,
+                    false
+                );
+                (setInteractTextElement as HTMLElement).addEventListener(
+                    "mouseout",
+                    setInteractText.out,
+                    false
+                );
+            }
+        },
         searchRestaurantsSubmit(e: any) {
-            this.search_address = "";
-            e.preventDefault();
+            
+            e.preventDefault();// Prevent loss search value when submit search input
+
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
             ${this.lat},${this.lng}&type=restaurant&radius=20000&key=[API KEY]`;
 
@@ -101,37 +195,14 @@ export default defineComponent({
                     console.log(error.message);
                 });
         },
-        async getCurrentTasksAndRoute() {
+        async getCurrentSearchResultAndRoute() {
             const res = await getSearchResults();
             this.search_results_all = res.data;
-            this.search_results_current =
+
+            this.search_result_current =
                 this.search_results_all[this.search_results_all.length - 1];
-            if (
-                window.location.href
-                    .toString()
-                    .substring(
-                        0,
-                        window.location.href.toString().length - 24
-                    ) ===
-                `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
-            ) {
-                this.$router.push(
-                    `/restaurantslist/${this.search_results_current._id}`
-                );
-            }
-            if (
-                window.location.href
-                    .toString()
-                    .substring(
-                        0,
-                        window.location.href.toString().length - 24
-                    ) !==
-                `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
-            ) {
-                this.$router.push(
-                    `/restaurantslist/sw/${this.search_results_current._id}`
-                );
-            }
+
+            this.switchLink(this.search_result_current._id);
         },
         async searchResultsExistCheck(
             place_name: string,
@@ -140,64 +211,53 @@ export default defineComponent({
         ) {
             const res = await getSearchResults();
             this.search_results_all = res.data;
-            let search_results_exist = false;
+
+            let search_result_exist = false;
+
             for (let i = 0; i < this.search_results_all.length; i++) {
                 if (
                     this.search_results_all[i].search_value.toString() ===
                     place_name.toString()
                 ) {
                     console.log("FIND DATA!!");
-                    this.search_results_found = this.search_results_all[i];
-                    search_results_exist = true;
+
+                    this.search_result_found = this.search_results_all[i];
+                    search_result_exist = true;
                     break;
                 }
             }
 
-            if (search_results_exist === true) {
-                if (
-                    window.location.href
-                        .toString()
-                        .substring(
-                            0,
-                            window.location.href.toString().length - 24
-                        ) ===
-                    `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
-                ) {
-                    this.$router.push(
-                        `/restaurantslist/${this.search_results_found._id}`
-                    );
-                }
-                if (
-                    window.location.href
-                        .toString()
-                        .substring(
-                            0,
-                            window.location.href.toString().length - 24
-                        ) !==
-                    `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
-                ) {
-                    this.$router.push(
-                        `/restaurantslist/sw/${this.search_results_found._id}`
-                    );
-                }
-            }
-            if (search_results_exist === false) {
-                this.searchRestaurants(lat_value, lng_value, place_name);
+            if (search_result_exist === true) {
+                this.switchLink(this.search_result_found._id);
+            } else {
+                (
+                    document.getElementById("tiny_loader") as HTMLElement
+                ).style.visibility = "visible"; // Set the small loading animation to visible when have search value that does not exist in database.
+
+                this.searchRestaurantsAndSavingData(
+                    lat_value,
+                    lng_value,
+                    place_name
+                );
             }
         },
-        searchRestaurants(latt: number, lngg: number, place_name: string) {
+        searchRestaurantsAndSavingData(
+            latitude: number,
+            longitude: number,
+            place_name: string
+        ) {
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
-            ${latt},${lngg}&type=restaurant&radius=20000&key=[API KEY]`;
+            ${latitude},${longitude}&type=restaurant&radius=20000&key=[API KEY]`;
 
             axios
                 .get(URL)
                 .then((response) => {
-                    this.places = response.data.results;
-                    this.search_results.places = this.places;
-                    this.search_results.search_value = place_name;
+                    this.search_result.places = response.data.results;
+                    this.search_result.search_value = place_name;
                     console.log("SAVING DATA");
-                    const res = createSearchResult(this.search_results);
-                    this.getCurrentTasksAndRoute();
+
+                    const res = createSearchResult(this.search_result);
+                    this.getCurrentSearchResultAndRoute();
                 })
                 .catch((error) => {
                     console.log(error.message);
@@ -207,24 +267,20 @@ export default defineComponent({
     mounted() {
         const google = window.google;
         var autocomplete = new google.maps.places.Autocomplete(
-            this.$refs["autocomplete"],
-            {
-                bounds: new google.maps.LatLngBounds(
-                    new google.maps.LatLng(45.4215296, -75.6971931)
-                ),
-            }
+            this.$refs["autocomplete"]
         );
 
         autocomplete.addListener("place_changed", () => {
             var place = autocomplete.getPlace();
+
             this.lat = place.geometry.location.lat();
             this.lng = place.geometry.location.lng();
+
             this.searchResultsExistCheck(
                 place.name,
                 place.geometry.location.lat(),
                 place.geometry.location.lng()
             );
-            this.search_address = "";
         });
     },
 });
@@ -232,32 +288,72 @@ export default defineComponent({
 
 <style>
 #app {
-    font-family: "Itim", sans-serif;
+    font-family: "Jost", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
     color: white;
 }
 
+nav {
+    border: #212529 0.125em solid;
+}
+
+.navbar-custom .navbar-toggler {
+    margin-right: 5px;
+    background-color: white;
+    color: #37e2a4;
+}
+
+.navbar-custom .navbar-toggler .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 0, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+nav .navbar-nav .nav-item .nav-link {
+    margin-top: 4.5px;
+    margin-left: 10px;
+    color: white !important;
+    font-size: 16px;
+}
+
+nav .navbar-nav .nav-item .nav-link:hover {
+    color: #37e2a4 !important;
+    text-shadow: 0 0 0.125em hsl(0 0% 100% / 0.3), 0 0 0.45em currentColor;
+}
+
+.navbar-custom .navbar-brand {
+    font-size: 20px;
+    color: #37e2a4;
+    text-shadow: 0 0 0.125em hsl(0 0% 100% / 0.3), 0 0 0.45em currentColor;
+}
+
+.navbar-custom .navbar-brand:hover {
+    color: #37e2a4;
+    text-shadow: 0 0 0.125em hsl(0 0% 100% / 0.3), 0 0 0.45em currentColor;
+}
+
 body.searching {
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
-    background-image: url("./assets/background-res-app-blur.jpg");
+    background-color: #212529;
+    background-image: url("./assets/background-res-app-nice-2.jpg");
 }
 
 body.restaurantlist {
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
-    background-image: url("./assets/background-res-app-blur.jpg");
+    background-color: #212529;
+    background-image: url("./assets/background-res-app-nice-2-blur.jpg");
 }
 
 body.restaurantlistswitch {
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
-    background-image: url("./assets/background-res-app-blur.jpg");
+    background-color: #212529;
+    background-image: url("./assets/background-res-app-nice-2-blur.jpg");
 }
 
 .search {
@@ -277,30 +373,27 @@ body.restaurantlistswitch {
 
 .search #navbar-search-input {
     height: 40px;
+    width: 300px;
     text-indent: 25px;
-
-    border: 2px solid #544646;
+    border: 2px solid #d6d4d4;
 }
 
 .search input:focus {
     box-shadow: none;
     border: 3px solid #37e2a4;
-    box-shadow: 0 0 8px #212529;
+    box-shadow: inset 0 0 0.5em 0 #37e2a4, 0 0 0.5em 0 #37e2a4;
 }
 
 .search #navbar-search-input:focus {
     box-shadow: none;
     border: 2px solid #37e2a4;
+    box-shadow: inset 0 0 0.2em 0 #37e2a4, 0 0 0.5em 0 #37e2a4;
 }
 
 .search #fa-search {
     position: absolute;
-    top: 22px;
+    top: 23.5px;
     left: 16px;
-    color: #212529;
-}
-
-.search .fa-search {
     color: #212529;
 }
 
@@ -309,17 +402,6 @@ body.restaurantlistswitch {
     top: 12px;
     left: 12px;
     color: #212529;
-}
-
-.search button {
-    position: absolute;
-    color: white;
-    top: 5px;
-    right: 5px;
-    height: 50px;
-    width: 50px;
-    background: white;
-    border: 2px solid white;
 }
 
 .search button:hover {
@@ -341,5 +423,32 @@ body.restaurantlistswitch {
     background-color: #353b48;
     border-radius: 30px;
     padding: 10px;
+}
+
+input,
+input::-webkit-input-placeholder {
+    font-size: 16px;
+}
+
+#tiny_loader {
+    position: absolute;
+    visibility: hidden;
+    margin-left: 105px;
+    width: 50px;
+    height: 40px;
+    stroke-dasharray: 269.7405090332031px;
+    stroke-dashoffset: 0;
+    animation: tiny_heartBeat 10s linear reverse infinite;
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 0 5px #37e2a4);
+}
+
+@keyframes tiny_heartBeat {
+    50% {
+        stroke-dashoffset: 2200px;
+    }
+    50.01% {
+        stroke-dashoffset: -2200px;
+    }
 }
 </style>

@@ -9,7 +9,6 @@ var searchresults = require("./routes");
 app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
-
 app.use("/api", searchresults);
 
 module.exports = app;

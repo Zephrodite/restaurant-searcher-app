@@ -1,5 +1,24 @@
 <template>
-    <h1>Find your favourite restaurant</h1>
+
+    <svg
+        id="loader"
+        v-show="loader_visible"
+        viewBox="0 0 90 90"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <circle
+            id="c"
+            fill="none"
+            stroke-width="6px"
+            stroke-linecap="round"
+            stroke="#37e2a4"
+            cx="45"
+            cy="45"
+            r="35"
+        />
+    </svg>
+
+    <h1 id="welcome_text">Find your favourite restaurant</h1>
     <br />
 
     <div>
@@ -13,8 +32,7 @@
                         <input
                             type="text"
                             class="form-control"
-                            placeholder=" Please Enter A City/Town Name"
-                            v-model="search_address"
+                            placeholder="Enter A City/Town Name"
                             ref="autocomplete"
                         />
                     </div>
@@ -23,7 +41,6 @@
         </form>
     </div>
 
-    <div></div>
 </template>
 
 <script lang="ts">
@@ -37,20 +54,21 @@ export default defineComponent({
     name: "Searching",
     data() {
         return {
-            search_results: {} as SearchResult,
+            search_result: {} as SearchResult,
             search_results_all: [] as SearchResult[],
-            search_results_current: {} as SearchResult,
-            search_results_found: {} as SearchResult,
-            id: "",
+            search_result_current: {} as SearchResult,
+            search_result_found: {} as SearchResult,
             places: [],
             lat: 0,
             lng: 0,
-            search_address: "",
+            loader_visible: false,
         };
     },
     methods: {
         searchRestaurantsSubmit(e: any) {
-            e.preventDefault();
+
+            e.preventDefault();// Prevent loss search value when submit search input
+
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
             ${this.lat},${this.lng}&type=restaurant&radius=20000&key=[API KEY]`;
 
@@ -63,13 +81,15 @@ export default defineComponent({
                     console.log(error.message);
                 });
         },
-        async getCurrentTasksAndRoute() {
+        async getCurrentSearchResultAndRoute() {
             const res = await getSearchResults();
             this.search_results_all = res.data;
-            this.search_results_current =
+
+            this.search_result_current =
                 this.search_results_all[this.search_results_all.length - 1];
+
             this.$router.push(
-                `/restaurantslist/${this.search_results_current._id}`
+                `/restaurantslist/${this.search_result_current._id}`
             );
         },
         async searchResultsExistCheck(
@@ -80,7 +100,7 @@ export default defineComponent({
             const res = await getSearchResults();
             this.search_results_all = res.data;
 
-            let search_results_exist = false;
+            let search_result_exist = false;
 
             for (let i = 0; i < this.search_results_all.length; i++) {
                 if (
@@ -88,33 +108,49 @@ export default defineComponent({
                     place_name.toString()
                 ) {
                     console.log("FIND DATA!!");
-                    this.search_results_found = this.search_results_all[i];
-                    search_results_exist = true;
+
+                    this.search_result_found = this.search_results_all[i];
+                    search_result_exist = true;
                     break;
                 }
             }
 
-            if (search_results_exist == true) {
+            if (search_result_exist == true) {
                 this.$router.push(
-                    `/restaurantslist/${this.search_results_found._id}`
+                    `/restaurantslist/${this.search_result_found._id}`
                 );
-            } else if (search_results_exist == false) {
-                this.searchRestaurants(lat_value, lng_value, place_name);
+
+            } else {
+                this.loader_visible = !this.loader_visible; // Set the big loading animation to visible when have search value that does not exist in database.
+
+                (
+                    document.getElementById("welcome_text") as HTMLElement
+                ).style.marginTop = "48px";
+
+                this.searchRestaurantsAndSavingData(
+                    lat_value,
+                    lng_value,
+                    place_name
+                );
             }
         },
-        searchRestaurants(latt: number, lngg: number, place_name: string) {
+        searchRestaurantsAndSavingData(
+            latitude : number,
+            longitude : number,
+            place_name: string
+        ) {
             const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=
-            ${latt},${lngg}&type=restaurant&radius=20000&key=[API KEY]`;
+            ${latitude},${longitude}&type=restaurant&radius=20000&key=[API KEY]`;
 
             axios
                 .get(URL)
                 .then((response) => {
-                    this.places = response.data.results;
-                    this.search_results.places = this.places;
-                    this.search_results.search_value = place_name;
+                    this.search_result.places = response.data.results;
+                    this.search_result.search_value = place_name;
                     console.log("SAVING DATA");
-                    const res = createSearchResult(this.search_results);
-                    this.getCurrentTasksAndRoute();
+                    const res = createSearchResult(this.search_result);
+
+                    this.getCurrentSearchResultAndRoute();
                 })
                 .catch((error) => {
                     console.log(error.message);
@@ -124,18 +160,15 @@ export default defineComponent({
     mounted() {
         const google = window.google;
         var autocomplete = new google.maps.places.Autocomplete(
-            this.$refs["autocomplete"],
-            {
-                bounds: new google.maps.LatLngBounds(
-                    new google.maps.LatLng(45.4215296, -75.6971931)
-                ),
-            }
+            this.$refs["autocomplete"]
         );
 
         autocomplete.addListener("place_changed", () => {
             var place = autocomplete.getPlace();
+
             this.lat = place.geometry.location.lat();
             this.lng = place.geometry.location.lng();
+
             this.searchResultsExistCheck(
                 place.name,
                 place.geometry.location.lat(),
@@ -152,15 +185,35 @@ export default defineComponent({
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h1 {
-        font-family: "Itim", sans-serif;
-    margin-top: 240px;
-    font-size: 36px;
+    font-family: "Jost", sans-serif;
+    margin-top: 210px;
+    font-size: 44px;
     font-weight: bold;
     color: white;
-    /* text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; */
+    text-shadow: 0 0 5px #000000;
 }
 
-i .fa-search {
-    color: black;
+input,
+input::-webkit-input-placeholder {
+    font-size: 20px;
+}
+
+#loader {
+    width: 100px;
+    margin-top: 20px;
+    stroke-dasharray: 269.7405090332031px;
+    stroke-dashoffset: 0;
+    animation: heartBeat 10s linear reverse infinite;
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 0 5px #37e2a4);
+}
+
+@keyframes heartBeat {
+    50% {
+        stroke-dashoffset: 2200px;
+    }
+    50.01% {
+        stroke-dashoffset: -2200px;
+    }
 }
 </style>

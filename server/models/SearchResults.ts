@@ -6,7 +6,7 @@ let searchresultsSchema = new mongoose.Schema(
         places: Array,
     },
     {
-        versionKey: false,
+        versionKey: false 
     }
 );
 

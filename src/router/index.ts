@@ -3,7 +3,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    alias: "/searchresults/new",
+    alias: "/",
     name: "searchresults-new",
     component: () => import("@/components/Searching.vue"),
   },
@@ -20,10 +20,6 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/components/RestaurantsListSwitch.vue"),
   }
 ];
-
-
-"/searchresults/sw/:id"
-console.log(process.env.BASE_URL);
 
 const router = createRouter({
   history: createWebHistory(),
