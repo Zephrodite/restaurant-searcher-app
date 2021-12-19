@@ -1,9 +1,11 @@
 var mongoose = require("mongoose");
+require('dotenv').config()
 
 var startConnection: any = async (): Promise<void> => {
     try {
         const db = await mongoose.connect(
-            "mongodb://localhost:27017/restaurants-searcher"
+            process.env.VUE_APP_DB_URL
+
         );
         console.log(db.connection.name);
     } catch (error) {

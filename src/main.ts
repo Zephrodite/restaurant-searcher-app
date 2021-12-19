@@ -17,4 +17,7 @@ library.add(far);
 import { dom } from "@fortawesome/fontawesome-svg-core";
 dom.watch();
 
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 createApp(App).component("fa", FontAwesomeIcon).use(router).mount('#app')
