@@ -7,13 +7,13 @@
             margin-top: 0px;
         "
     >
-        <h1 v-show="isVisibleKeywordText">
+        <h1 v-show="isKeywordTextVisible">
             Restaurants in {{ search_results_current.search_value }}
         </h1>
     </div>
     <h1
         id="notFoundAlert"
-        v-show="isVisibleNotFoundText"
+        v-show="isNotFoundTextVisible"
         style="text-align: center"
     ></h1>
     <br />
@@ -56,8 +56,8 @@ export default defineComponent({
     data() {
         return {
             search_results_current: {} as SearchResult,
-            isVisibleKeywordText: true,
-            isVisibleNotFoundText: false,
+            isKeywordTextVisible: true,
+            isNotFoundTextVisible: false,
         };
     },
     methods: {
@@ -68,8 +68,8 @@ export default defineComponent({
 
                 //Check length of places list If don't found any place from search value It will return some text to tell users.
                 if (this.search_results_current.places.length == 0) {
-                    this.isVisibleKeywordText = !this.isVisibleKeywordText;
-                    this.isVisibleNotFoundText = !this.isVisibleNotFoundText;
+                    this.isKeywordTextVisible = !this.isKeywordTextVisible;
+                    this.isNotFoundTextVisible = !this.isNotFoundTextVisible;
 
                     (
                         document.getElementById("notFoundAlert") as HTMLElement
