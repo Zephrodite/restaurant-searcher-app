@@ -134,7 +134,7 @@ export default defineComponent({
 h1 {
     text-align: left;
     font-family: "Jost", sans-serif;
-    margin-top: -15px;
+    margin-top: -190px;
     font-size: 32px;
     font-weight: bold;
     color: white;

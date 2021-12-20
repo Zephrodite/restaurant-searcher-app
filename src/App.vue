@@ -303,6 +303,7 @@ export default defineComponent({
 
 nav {
     border: #212529 0.125em solid;
+    margin-bottom: 210px;
 }
 
 .navbar-custom .navbar-toggler {
