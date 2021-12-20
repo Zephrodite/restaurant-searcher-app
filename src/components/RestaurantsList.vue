@@ -135,7 +135,7 @@ export default defineComponent({
 <style scoped>
 h1 {
     font-family: "Jost", sans-serif;
-    margin-top: -15px;
+    margin-top: -190px;
     font-size: 32px;
     font-weight: bold;
     color: white;

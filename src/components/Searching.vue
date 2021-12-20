@@ -124,7 +124,7 @@ export default defineComponent({
 
                 (
                     document.getElementById("welcome_text") as HTMLElement
-                ).style.marginTop = "48px";
+                ).style.marginTop = "-21px";
 
                 this.searchRestaurantsAndSavingData(
                     lat_value,
@@ -189,7 +189,6 @@ export default defineComponent({
 <style scoped>
 h1 {
     font-family: "Jost", sans-serif;
-    margin-top: 210px;
     font-size: 44px;
     font-weight: bold;
     color: white;
@@ -203,7 +202,7 @@ input::-webkit-input-placeholder {
 
 #loader {
     width: 100px;
-    margin-top: 20px;
+    margin-top: -190px;
     stroke-dasharray: 269.7405090332031px;
     stroke-dashoffset: 0;
     animation: heartBeat 10s linear reverse infinite;
