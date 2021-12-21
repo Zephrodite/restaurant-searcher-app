@@ -114,6 +114,10 @@ export default defineComponent({
         // I'm having a problem when searching for new values. The link has been changed. But the list of restaurants on the page doesn't change.
         
         switchLink(id_of_Current_search_result: string) {
+            console.log(window.location.href.toString().substring(
+                    0,
+                    window.location.href.toString().length - 24));
+            console.log(`http://${window.location.hostname}/restaurantslist/sw/`);
             if (
                 window.location.href.toString().substring(
                     0,
