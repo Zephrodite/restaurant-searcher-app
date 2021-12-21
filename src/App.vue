@@ -112,14 +112,16 @@ export default defineComponent({
     methods: {
         // - Check the current link for switch to another link when users enter/press some new search value.
         // I'm having a problem when searching for new values. The link has been changed. But the list of restaurants on the page doesn't change.
+        
         switchLink(id_of_Current_search_result: string) {
+
             if (
                 window.location.href.toString().substring(
                     0,
                     window.location.href.toString().length - 24 // - To this line of code --> window.location.href.toString().length - 24 <-- use minus 24 to delete the ObjectID in currentlink.
                     // There are 24 character in ObjectID e.g. 61b6e299dd64c45ca711d94e
                 ) ===
-                `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`
+                `https://${window.location.hostname}/restaurantslist/sw/`
             ) {
                 this.$router.push(
                     `/restaurantslist/${id_of_Current_search_result}`
