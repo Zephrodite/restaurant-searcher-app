@@ -112,7 +112,10 @@ export default defineComponent({
     methods: {
         // - Check the current link for switch to another link when users enter/press some new search value.
         // I'm having a problem when searching for new values. The link has been changed. But the list of restaurants on the page doesn't change.
+        
         switchLink(id_of_Current_search_result: string) {
+            console.log( `http://${window.location.hostname}:${location.port}/restaurantslist/sw/`);
+            console.log( `http://${window.location.hostname}/restaurantslist/sw/`);
             if (
                 window.location.href.toString().substring(
                     0,
